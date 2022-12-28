@@ -1,5 +1,6 @@
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.Iterator;
 //import java.lang.Thread;
 import java.util.Scanner;
 public class battleship{
@@ -21,10 +22,14 @@ public class battleship{
     }
 
     public static void printBoard(String[][] board){
+        System.out.println("   1  2  3  4  5  6  7  8  9  10");
+        int counter = 0;
         for (String[] row : board){
+            System.out.print(letters[counter] + "  ");
             for (String c : row){
                 System.out.print(c + "  ");
             }
+            counter++;
             System.out.println();
         }
     }
@@ -36,7 +41,7 @@ public class battleship{
             int col = r.nextInt(10);
             boolean valid = false, cont = false;
             do{
-                boolean result = checkValid(board, row, col, pieceLengths[i], direction);
+                boolean result = checkValid(board, row, col, pieceLengths[i], direction, true);
                 if (!result){
                     cont = true;
                     break;
@@ -50,72 +55,101 @@ public class battleship{
                 continue;
             }
 
-            place(board, row, col, i, direction, true);
+            place(board, row, col, i, direction, true, 0);
         }
     }
 
     public static void playerSetup(String[][] board, Scanner obj){
-        int piecesPlaced = 0;
         System.out.println("When prompted below, enter 'v' if you would like to place the piece vertically on the board, 'h' if you would like to place it horizontally, or 's' if you would like to skip placing this and place a different piece first.\nPlease be careful. Unfortunantely, pieces can't be moved after they've been placed.");
-        System.out.print("\nWhen prompted for where you want to put the piece. If you chose to place your piece horizontally, ");
+        System.out.println("\nWhen prompted for where you want to put the piece. If you chose to place your piece horizontally, the space you enter will be the left most coordinate. If you chose vertically, it will be the highest coordinate.\n");
         //possibly print text about orientation
         //and implement waiting for user to read all information (thread.sleep)
 
-        while (piecesPlaced < 10){
-            ArrayList<Integer> piecesToPlace = new ArrayList<>();
-            for (int pieceLength : pieceLengths) {piecesToPlace.add(pieceLength);}
+        ArrayList<Integer> piecesToPlace = new ArrayList<>();
+        for (int pieceLength : pieceLengths) {piecesToPlace.add(pieceLength);}
 
-            while (piecesToPlace.size() > 0){
-                for (int item : piecesToPlace){
-                    System.out.println("Placing piece of length " + item);
+        while (piecesToPlace.size() > 0){
+            int piecePlacer = 0;
+            for (Iterator<Integer> iterator = piecesToPlace.iterator(); iterator.hasNext();){
+                int item = iterator.next();
+                System.out.println("Current board: ");
+                printBoard(board);
+                System.out.println("\nPlacing piece of length " + item);
+                boolean orientationBool = false, cont = false;
+                String orient = "";
+                do {
                     System.out.print("Enter the orientation you want (v, h, or s): ");
                     String orientation = obj.nextLine().toLowerCase();
                     if (!orientation.equals("v") && !orientation.equals("h") && !orientation.equals("s")){
                         System.out.println("\nInvalid Input.\n");
                         continue;
-                    } else if (orientation.equals("s"))
-                        continue;
-                    
-                    String location = obj.next();
-                    boolean validUserLocation = checkUser(location);
-                    if (!validUserLocation)
-                        continue;
-                    else{
-                        int row = findLetter(location);
-                        int col = Integer.valueOf(location.substring(1,2));
-
-                        place(board, row, col, item, orientation, false); //item is the length of the piece itself
-                        piecesToPlace.remove(item);
+                    } else if (orientation.equals("s")){
+                        orientationBool = true;
+                        cont = true;
+                    } else{
+                        orientationBool = true;
+                        orient = orientation;
                     }
-                }
+                } while (!orientationBool);
+                if (cont)
+                    continue;
+                boolean validPlacement = false;
+                do {
+                    System.out.print("Enter the coordinate that you want to place your ship (ie A8): ");
+                    String location = obj.nextLine();
+                    boolean validUserLocation = checkUser(location);
+                    if (!validUserLocation){
+                        System.out.println("That location is not on the board.");
+                        continue;
+                    }else{
+                        //never called checkvalid method
+                        int row = findLetter(location);
+                        int col = Integer.valueOf(location.substring(1,2)) - 1;
+                        boolean isValid = checkValid(board, row, col, item, orient, false);
+                        if (!isValid)
+                            continue;
+    
+                        place(board, row, col, item, orient, false, piecePlacer); //item is the length of the piece itself
+                        printBoard(board);
+                        iterator.remove();
+                        validPlacement = true;
+                        piecePlacer++;
+                    }
+                } while (!validPlacement);
+                //do while would need to start here
             }
         }
+        System.out.println("all pieces placed");
+        printBoard(board);
     }
     
-    public static void place(String[][] board, int row, int col, int index, String direction, boolean isIndex){
+    public static void place(String[][] board, int row, int col, int index, String direction, boolean isIndex, int output){
         int realLength = (!isIndex) ? index : pieceLengths[index];
+        int display = (!isIndex) ? output : index;
         if (direction.equals("v")){
             for (int i = 0; i < realLength; i++){
-                board[row+i][col] = "" + index;
+                board[row+i][col] = "" + display;
             }
         } else{
             for (int i = 0; i < realLength; i++){
-                board[row][col+i] = "" + index;
+                board[row][col+i] = "" + display;
             }
         }
     }
 
-    public static boolean checkValid(String[][] board, int row, int col, int pieceLength, String direction){
+    public static boolean checkValid(String[][] board, int row, int col, int pieceLength, String direction, boolean isComp){
         if (direction.equals("v")){
             if (row + pieceLength >= 10)
             return false;
             for (int i = 0; i < pieceLength; i++){
-                try{
-                    if (!board[row+i][col+1].equals(".") || !board[row-1+i][col].equals(".") || !board[row+1+i][col].equals(".") || !board[row+i][col-1].equals(".")){
-                        return false;
+                if (isComp){
+                    try{
+                        if (!board[row+i][col+1].equals(".") || !board[row-1+i][col].equals(".") || !board[row+1+i][col].equals(".") || !board[row+i][col-1].equals(".")){
+                            return false;
+                        }
+                    } catch (IndexOutOfBoundsException e){
+                        //do nothing
                     }
-                } catch (IndexOutOfBoundsException e){
-                    //do nothing
                 }
                 if (!board[row + i][col].equals("."))
                 return false;
@@ -125,12 +159,14 @@ public class battleship{
             if (col + pieceLength >= 10)
                 return false;
             for (int i = 0; i < pieceLength; i++){
-                try{
-                    if (!board[row][col+1+i].equals(".") || !board[row-1][col+i].equals(".") || !board[row+1][col+i].equals(".") || !board[row][col-1+i].equals(".")){
-                        return false;
+                if (isComp){
+                    try{
+                        if (!board[row][col+1+i].equals(".") || !board[row-1][col+i].equals(".") || !board[row+1][col+i].equals(".") || !board[row][col-1+i].equals(".")){
+                            return false;
+                        }
+                    } catch (IndexOutOfBoundsException e){
+                        //do nothing
                     }
-                } catch (IndexOutOfBoundsException e){
-                    //do nothing
                 }
                 if (!board[row][col+i].equals("."))
                     return false;
@@ -177,7 +213,9 @@ public class battleship{
         String[][] playerBoard = new String[10][10];
         fillBoards(compBoard, playerBoard);
         compSetup(compBoard);
-        printBoard(compBoard);
+        //printBoard(compBoard);
+
+        playerSetup(playerBoard, obj);
 
 
 

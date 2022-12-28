@@ -1,0 +1,14 @@
+random text file for brainstorming battleship game
+
+pieces: 1 len 5, 2 len 4, 3 len 3, 4 len 2
+steps:
+1. create 10x10 board
+
+2. setup 
+    randomly place all 10 cpu boards //COMPLETED
+
+    allow user to place all 10 of their boards 
+
+3. gameplay
+    implement guessing mechanism to continue with game (shouldn't be too hard)
+    check to see if there is a winner (all ships are sank), for both
