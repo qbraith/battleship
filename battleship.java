@@ -1,8 +1,9 @@
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.Iterator;
-//import java.lang.Thread;
+import java.lang.Thread;
 import java.util.Scanner;
+import java.util.LinkedList;
 public class battleship{
     static Random r = new Random();
     final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
@@ -116,7 +117,7 @@ public class battleship{
                         piecePlacer++;
                     }
                 } while (!validPlacement);
-                //do while would need to start here
+                clear();
             }
         }
         System.out.println("all pieces placed");
@@ -206,18 +207,93 @@ public class battleship{
         }
         return -1;
     }
-    public static void main(String[] args) {
+    
+    public static void compGuess(String[][] board, LinkedList<String> guessed) throws InterruptedException{
+        int row = r.nextInt(10);
+        int col = r.nextInt(10);
+
+        boolean guess = false;
+        do {
+            String result = (board[row][col].equals(".")) ? "MISS" : "HIT";
+            if (result.equals("MISS")){
+                guess = true;
+            } else{
+                //add logic to guess somewhere close if they got a hit
+            }
+
+            System.out.println("Computer gussed: " + letters[row] + col);
+            System.out.print("Result...   ");
+            Thread.sleep(750);
+            System.out.println(result);
+
+            guessed.add(String.valueOf(row) + String.valueOf(col));
+        } while (!guess);
+    }
+    
+    public static void playerGuess(String[][] board, Scanner obj) throws InterruptedException{
+        boolean missed = false;
+        do{
+            boolean validGuess = false;
+            String finalGuess = "";
+            do{
+                System.out.print("Enter a coordinate where you think the opponent ship is: ");
+                String guess = obj.nextLine();
+                boolean valid = checkUser(guess);
+                if (!valid)
+                    continue;
+                else{
+                    finalGuess = guess;
+                    validGuess = true;
+                }
+            } while (!validGuess);
+            //guess on board established
+            int row = findLetter(finalGuess.substring(0, 1));
+            int col = Integer.valueOf(finalGuess.substring(1, 2)) - 1;
+    
+            String result = (board[row][col].equals(".")) ? "MISS" : "HIT";
+            if (result.equals("MISS")){
+                missed = true;
+            } else{
+                //hit
+            }
+
+            System.out.print("Result... ");
+            Thread.sleep(750);
+            System.out.println(result);
+
+        } while (!missed);
+
+
+    }
+    
+    public static void clear(){
+        System.out.print("\033[H\033[2J");  
+        System.out.flush(); 
+    }
+    public static void main(String[] args) throws InterruptedException{
         Scanner obj = new Scanner(System.in);
         System.out.println("Battleship game.");
         String[][] compBoard = new String[10][10];
         String[][] playerBoard = new String[10][10];
         fillBoards(compBoard, playerBoard);
         compSetup(compBoard);
-        //printBoard(compBoard);
-
-        playerSetup(playerBoard, obj);
-
-
+        //playerSetup(playerBoard, obj);
+        
+        //LinkedList<String> guessed = new LinkedList<>();
+        clear();
+        System.out.println("Computer board: \n\n");
+        printBoard(compBoard);
+        try{
+            System.out.println("Num arguments: " + Integer.valueOf(args[0]));
+            for (int i = 0; i < Integer.valueOf(args[0]); i++){
+                playerGuess(compBoard, obj);
+                Thread.sleep(1000);
+                clear();
+                printBoard(compBoard);
+            }
+        } catch (java.lang.ArrayIndexOutOfBoundsException | NumberFormatException e){
+            System.err.println("Error caught.");
+        }
 
         obj.close();
     }
