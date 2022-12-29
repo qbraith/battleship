@@ -12,3 +12,12 @@ steps:
 3. gameplay
     implement guessing mechanism to continue with game (shouldn't be too hard)
     check to see if there is a winner (all ships are sank), for both
+
+errors to note:
+    you can't place ships near the edge
+    
+    the computer spaceing algorithm doesn't work for pieces on the border
+
+    when guessing something ending in 10, it counts as one (a10 is reasd as a1 in playerGuess method)
+
+    

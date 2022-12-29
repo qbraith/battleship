@@ -11,7 +11,7 @@ public class battleship{
     static int[] dudePerPiece = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //this is going to be used to test sunked ships
     //                           0, 1, 2, 3, 4, 5, 6, 7, 8, 9
     static int compShipLeft = 10;
-    static int playerShipLeft = 10;
+    static int playerShipLeft = 10; //*dpp, cpl, and spl haven't been used
 
     public static void fillBoards(String[][] board1, String[][] board2){
         for (int i = 0; i < board1.length; i++){
@@ -117,11 +117,8 @@ public class battleship{
                         piecePlacer++;
                     }
                 } while (!validPlacement);
-                clear();
             }
         }
-        System.out.println("all pieces placed");
-        printBoard(board);
     }
     
     public static void place(String[][] board, int row, int col, int index, String direction, boolean isIndex, int output){
@@ -262,8 +259,6 @@ public class battleship{
             System.out.println(result);
 
         } while (!missed);
-
-
     }
     
     public static void clear(){
@@ -297,7 +292,6 @@ public class battleship{
 
         obj.close();
     }
-
 
 
 }
