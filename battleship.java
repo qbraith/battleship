@@ -1,23 +1,23 @@
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.lang.Thread;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedList;
+
 public class battleship{
     static Random r = new Random();
     final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
     final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};
-    static int[] dudePerPiece = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //this is going to be used to test sunked ships
-    //                           0, 1, 2, 3, 4, 5, 6, 7, 8, 9
     static int compShipLeft = 10;
-    static int playerShipLeft = 10; //*dpp, cpl, and spl haven't been used
+    static int playerShipLeft = 10; 
 
-    public static void fillBoards(String[][] board1, String[][] board2){
+    public static void fillBoards(String[][] board1, String[][] board2, String[][] board3){
         for (int i = 0; i < board1.length; i++){
             for (int j = 0; j < board1[i].length; j++){
                 board1[i][j] = ".";
                 board2[i][j] = "."; //assumes boards are same dimensions (they have to be)
+                board3[i][j] = ".";
             }
         }
     }
@@ -107,8 +107,10 @@ public class battleship{
                         int row = findLetter(location);
                         int col = Integer.valueOf(location.substring(1,2)) - 1;
                         boolean isValid = checkValid(board, row, col, item, orient, false);
-                        if (!isValid)
+                        if (!isValid){
+                            System.out.println("You can't place your ship there.");
                             continue;
+                        }
     
                         place(board, row, col, item, orient, false, piecePlacer); //item is the length of the piece itself
                         printBoard(board);
@@ -137,7 +139,7 @@ public class battleship{
 
     public static boolean checkValid(String[][] board, int row, int col, int pieceLength, String direction, boolean isComp){
         if (direction.equals("v")){
-            if (row + pieceLength >= 10)
+            if (row + pieceLength > 10)
             return false;
             for (int i = 0; i < pieceLength; i++){
                 if (isComp){
@@ -154,7 +156,7 @@ public class battleship{
             }
             return true;
         } else{
-            if (col + pieceLength >= 10)
+            if (col + pieceLength > 10)
                 return false;
             for (int i = 0; i < pieceLength; i++){
                 if (isComp){
@@ -175,9 +177,11 @@ public class battleship{
     
     public static boolean checkUser(String location){
         //check whether the spot user selected is valid or not in terms of sheer input
-        if (location.length() != 2 && !location.substring(1, 3).equals("10"))
+        if (location.length() != 2 && location.length() != 3)
             return false;
-        
+        if (location.length() == 3 && !location.substring(1, 3).equals("10"))
+            return false;
+
         int notInside = 0;
         for (String item : letters){
             if (!location.substring(0, 1).toUpperCase().equals(item))
@@ -227,11 +231,14 @@ public class battleship{
         } while (!guess);
     }
     
-    public static void playerGuess(String[][] board, Scanner obj) throws InterruptedException{
+    public static boolean playerGuess(String[][] board, String[][] guessBoard, Scanner obj) throws InterruptedException{ //boolean checks if game is over
         boolean missed = false;
         do{
             boolean validGuess = false;
             String finalGuess = "";
+            clear();
+            System.out.println("Your guesses (x = hit, o = miss): ");
+            printBoard(guessBoard);
             do{
                 System.out.print("Enter a coordinate where you think the opponent ship is: ");
                 String guess = obj.nextLine();
@@ -245,20 +252,56 @@ public class battleship{
             } while (!validGuess);
             //guess on board established
             int row = findLetter(finalGuess.substring(0, 1));
-            int col = Integer.valueOf(finalGuess.substring(1, 2)) - 1;
+            int col = Integer.valueOf(finalGuess.substring(1, finalGuess.length())) - 1;
+            String current = board[row][col];
     
-            String result = (board[row][col].equals(".")) ? "MISS" : "HIT";
+            String result = (current.equals(".")) ? "MISS" : "HIT";
+            boolean sunkShip = false;
             if (result.equals("MISS")){
+                guessBoard[row][col] = "O";
                 missed = true;
             } else{
                 //hit
+                System.out.println("Hit here. In hit event loop");
+                guessBoard[row][col] = "X";
+                board[row][col] = "X" + current; //turns 8 into X8 (signifying hit)
+                sunkShip = shipSank(board, current);
+                if (sunkShip){
+                    compShipLeft--;
+                    boolean gameOver = checkWinner();
+                    if (gameOver){
+                        return true;
+                    }
+                }
+                
             }
 
             System.out.print("Result... ");
             Thread.sleep(750);
             System.out.println(result);
+            if (sunkShip){
+                System.out.println("\nYou sunk a ship!!!");
+                System.out.println("Ships remaining: " + compShipLeft + "\n");
+            }
 
         } while (!missed);
+        return false;
+    }
+    
+    public static boolean shipSank(String[][] board, String target){
+        for (String[] row : board){
+            for (String item : row){
+                if (item.equals(target))
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    public static boolean checkWinner(){
+        if (compShipLeft == 0 || playerShipLeft == 0)
+            return true;
+        return false;
     }
     
     public static void clear(){
@@ -270,26 +313,26 @@ public class battleship{
         System.out.println("Battleship game.");
         String[][] compBoard = new String[10][10];
         String[][] playerBoard = new String[10][10];
-        fillBoards(compBoard, playerBoard);
+        String[][] guesses = new String[10][10];
+        fillBoards(compBoard, playerBoard, guesses);
         compSetup(compBoard);
         //playerSetup(playerBoard, obj);
         
         //LinkedList<String> guessed = new LinkedList<>();
         clear();
         System.out.println("Computer board: \n\n");
-        printBoard(compBoard);
+        printBoard(compBoard); //note that comp board will never actually be printed in real gameplay
         try{
             System.out.println("Num arguments: " + Integer.valueOf(args[0]));
             for (int i = 0; i < Integer.valueOf(args[0]); i++){
-                playerGuess(compBoard, obj);
+                playerGuess(compBoard, guesses, obj);
                 Thread.sleep(1000);
                 clear();
-                printBoard(compBoard);
             }
         } catch (java.lang.ArrayIndexOutOfBoundsException | NumberFormatException e){
             System.err.println("Error caught.");
         }
-
+        // if playerGuess returns true, print you win, leave loop
         obj.close();
     }
 

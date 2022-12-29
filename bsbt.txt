@@ -13,11 +13,18 @@ steps:
     implement guessing mechanism to continue with game (shouldn't be too hard)
     check to see if there is a winner (all ships are sank), for both
 
-errors to note:
-    you can't place ships near the edge
-    
+errors to note:    
     the computer spaceing algorithm doesn't work for pieces on the border
 
-    when guessing something ending in 10, it counts as one (a10 is reasd as a1 in playerGuess method)
+still to do:
+    fix noted errors
+
+    finish compguess method with artificial intelligence (very hard)
+
+    make checkWinner method to see if all ships have been sunked for either competitor (polish)
+    this method could possible be called inside the competitorGuess method
+
+    creates new "gussed" board that will show user where all of their guesses have been as the game progresses
+
 
     
