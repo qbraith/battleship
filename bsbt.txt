@@ -20,11 +20,36 @@ still to do:
     fix noted errors
 
     finish compguess method with artificial intelligence (very hard)
+    method will have to be boolean like playerguess
 
     make checkWinner method to see if all ships have been sunked for either competitor (polish)
     this method could possible be called inside the competitorGuess method
 
-    creates new "gussed" board that will show user where all of their guesses have been as the game progresses
+    create two variables in main method event loop for tracking whether game is over for each of the competitor guess methods
+    while loop condition... so on
+
+compGuess method event loop:
+    first turn:
+        randomly choose spot on board as guess
+        have algorithm to make sure computer can't pick same space twice (could be just numbers) (LinkedList)
+        check whether spot on board is a hit or miss
+        if its a miss:
+            print that its a miss
+            leave loop
+        if its a hit:
+            print that its a hit
+            check whether ship has been sunk
+                check if game is over
+            given another turn:
+                guess somewhere close to where they guessed previously (possibly poll or peek the linkedlist to get the first element)??
+                    possible reverse insertion on the linkedlist THIS IS THE HARD PART 
+                obtain guess that's close and check whether that is a hit or miss
+                it should also be smart enough to guess another place close to where a hit was if a miss follows a hit
+                    VERY HARD
+
+                repeat loop until miss
+
+
 
 
     

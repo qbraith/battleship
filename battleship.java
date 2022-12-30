@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class battleship{
-    static Random r = new Random();
     final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
-    final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};
+    final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};   
     static int compShipLeft = 10;
     static int playerShipLeft = 10; 
 
@@ -35,7 +34,7 @@ public class battleship{
         }
     }
 
-    public static void compSetup(String[][] board){
+    public static void compSetup(String[][] board, Random r){
         for (int i = 0; i < pieceLengths.length; i++){
             String direction = ((int) (Math.random() *2) == 0) ? "v" : "h";
             int row = r.nextInt(10);
@@ -209,7 +208,7 @@ public class battleship{
         return -1;
     }
     
-    public static void compGuess(String[][] board, LinkedList<String> guessed) throws InterruptedException{
+    public static void compGuess(String[][] board, LinkedList<String> guessed, Random r) throws InterruptedException{
         int row = r.nextInt(10);
         int col = r.nextInt(10);
 
@@ -238,6 +237,7 @@ public class battleship{
             String finalGuess = "";
             clear();
             System.out.println("Your guesses (x = hit, o = miss): ");
+            System.out.println("Ships remaining: " + compShipLeft);
             printBoard(guessBoard);
             do{
                 System.out.print("Enter a coordinate where you think the opponent ship is: ");
@@ -282,6 +282,7 @@ public class battleship{
             if (sunkShip){
                 System.out.println("\nYou sunk a ship!!!");
                 System.out.println("Ships remaining: " + compShipLeft + "\n");
+                Thread.sleep(2000);
             }
 
         } while (!missed);
@@ -309,13 +310,14 @@ public class battleship{
         System.out.flush(); 
     }
     public static void main(String[] args) throws InterruptedException{
+        Random r = new Random();
         Scanner obj = new Scanner(System.in);
         System.out.println("Battleship game.");
         String[][] compBoard = new String[10][10];
         String[][] playerBoard = new String[10][10];
         String[][] guesses = new String[10][10];
         fillBoards(compBoard, playerBoard, guesses);
-        compSetup(compBoard);
+        compSetup(compBoard, r);
         //playerSetup(playerBoard, obj);
         
         //LinkedList<String> guessed = new LinkedList<>();
