@@ -100,7 +100,7 @@ public class battleship{
                 do {
                     System.out.print("Enter the coordinate that you want to place your ship (ie A8): ");
                     String location = obj.nextLine();
-                    boolean validUserLocation = checkUser(location);
+                    boolean validUserLocation = checkUser(location, new LinkedList<>()); //new linkedlist as placeholder
                     if (!validUserLocation){
                         System.out.println("That location is not on the board.");
                         continue;
@@ -176,7 +176,7 @@ public class battleship{
         }
     }
     
-    public static boolean checkUser(String location){
+    public static boolean checkUser(String location, LinkedList<String> userGuesses){
         //check whether the spot user selected is valid or not in terms of sheer input
         if (location.length() != 2 && location.length() != 3)
             return false;
@@ -192,12 +192,16 @@ public class battleship{
             return false;
         try{
             int num = Integer.parseInt(location.substring(1, 2)) - 1; //valueOf does the same thing
-            if (num < 0 || num > 9){ //condition should never be true
+            if (num < 0 || num > 9) // (just in case), this condition should never be true
                 return false; 
-            }
         } catch (NumberFormatException e){
             return false;
         }
+        if (userGuesses.contains(location.toLowerCase())){
+            System.out.println("You already guessed this.");
+            return false;
+        }
+
         return true;
     }
     
@@ -221,18 +225,18 @@ public class battleship{
         guessed.add(String.valueOf(row) + String.valueOf(col)); 
         //REDO EVERYTHING AFTER THIS LOOP
         //possibly try to make decision tree
-        boolean missed = false;
-        boolean shipSunk = false;
+        boolean missed = false, shipSunk = false;
+        String move = board[row][col];
         do{
-            missed = board[row][col].equals("."); //true if miss
-            if (!missed){
+            missed = move.equals("."); //true if miss
+            if (!missed){ //hit
                 String current = board[row][col];
                 board[row][col] = "X" + board[row][col];
                 shipSunk = shipSank(board, current); 
                 if (shipSunk)
                     playerShipLeft--;
 
-            }
+            } //dont really need to do anything for a miss
 
             String result = (missed) ? red + "MISS" + reset : green + "HIT" + reset;
             System.out.println("Computer guessed: " + letters[row] + (col+1));
@@ -246,13 +250,18 @@ public class battleship{
                 boolean gameOver = checkWinner();
                 if (gameOver)
                     return true;
+                //might have to recursively recall
+            } else{ //here is where you implement logic to guess somewhere close
+                move = compSmartGuess(board, row, col, r);
+                //might have to introduce static boolean to keep track of this
+
             }
 
         } while (!missed);
         return false;
     }
     
-    public static boolean playerGuess(String[][] board, String[][] guessBoard, Scanner obj) throws InterruptedException{ //boolean checks if game is over
+    public static boolean playerGuess(String[][] board, String[][] guessBoard, LinkedList<String> guessedList, Scanner obj) throws InterruptedException{ //boolean checks if game is over
         boolean missed = false;
         do{
             boolean validGuess = false;
@@ -264,10 +273,11 @@ public class battleship{
             do{
                 System.out.print("Enter a coordinate where you think the opponent ship is: ");
                 String guess = obj.nextLine();
-                boolean valid = checkUser(guess);
+                boolean valid = checkUser(guess, guessedList);
                 if (!valid)
                     continue;
                 else{
+                    guessedList.add(guess.toLowerCase());
                     finalGuess = guess;
                     validGuess = true;
                 }
@@ -313,6 +323,30 @@ public class battleship{
         return false;
     }
     
+    public static String compSmartGuess(String[][] board, int row, int col, Random r){
+        String result = "";
+        try{
+            int choice = r.nextInt(4);
+            switch (choice){
+                case 0: //up
+                    result = board[row-1][col];
+                    break;
+                case 1: //down
+                    result = board[row+1][col];
+                    break;
+                case 2: //left
+                    result = board[row][col-1];
+                    break;
+                case 3: //right
+                    result = board[row][col+1];
+                    break;
+            }
+        } catch (java.lang.ArrayIndexOutOfBoundsException e){
+            compSmartGuess(board, row, col, r); //while true loop vs recursively calling
+        }
+        return result;
+    }
+
     public static boolean shipSank(String[][] board, String target){
         for (String[] row : board){
             for (String item : row){
@@ -337,6 +371,7 @@ public class battleship{
         Random r = new Random();
         Scanner obj = new Scanner(System.in);
         System.out.println("Battleship game.");
+        LinkedList<String> playerGuessed = new LinkedList<>();
         String[][] compBoard = new String[10][10];
         String[][] playerBoard = new String[10][10];
         String[][] guesses = new String[10][10];
@@ -353,7 +388,7 @@ public class battleship{
             System.out.println("Num arguments: " + Integer.valueOf(args[0]));
             for (int i = 0; i < Integer.valueOf(args[0]); i++){
                 System.out.println(20-i);
-                playerGuess(compBoard, guesses, obj);
+                playerGuess(compBoard, guesses, playerGuessed, obj);
                 Thread.sleep(1000);
                 clear();
             }
