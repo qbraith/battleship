@@ -19,6 +19,10 @@ errors to note:
 still to do:
     fix noted errors
 
+    dont allow user to repeat guesses
+
+    playerGuess method is slightly bad. fix threading and printing if there is a hit
+    
     finish compguess method with artificial intelligence (very hard)
     method will have to be boolean like playerguess
 
@@ -27,6 +31,10 @@ still to do:
 
     create two variables in main method event loop for tracking whether game is over for each of the competitor guess methods
     while loop condition... so on
+
+    possibly modify do/while loops in other methods to mimic start of compGuess do/while
+
+    create some kind of method to print the two boards next to eachother, like how you see when you play real battleship
 
 compGuess method event loop:
     first turn:
@@ -50,6 +58,23 @@ compGuess method event loop:
                 repeat loop until miss
 
 
+current compGuess method:
+    int row = r.nextInt(10);
+        int col = r.nextInt(10);
 
+        boolean guess = false;
+        do {
+            String result = (board[row][col].equals(".")) ? "MISS" : "HIT";
+            if (result.equals("MISS")){
+                guess = true;
+            } else{
+                //add logic to guess somewhere close if they got a hit
+            }
 
-    
+            System.out.println("Computer gussed: " + letters[row] + col);
+            System.out.print("Result...   ");
+            Thread.sleep(750);
+            System.out.println(result);
+
+            guessed.add(String.valueOf(row) + String.valueOf(col));
+        } while (!guess);

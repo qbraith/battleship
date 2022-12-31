@@ -208,26 +208,46 @@ public class battleship{
         return -1;
     }
     
-    public static void compGuess(String[][] board, LinkedList<String> guessed, Random r) throws InterruptedException{
-        int row = r.nextInt(10);
-        int col = r.nextInt(10);
+    public static boolean compGuess(String[][] board, LinkedList<String> guessed, Random r) throws InterruptedException{
+        boolean duplicate = false;
+        int row = 0, col = 0; //setting them to 0 as placeholders
+        do{ //this loop makes sure guess isn't a duplicate
+            row = r.nextInt(10);
+            col = r.nextInt(10);
+            duplicate = guessed.contains(String.valueOf(row) + String.valueOf(col));
+        } while (!duplicate);
+        guessed.add(String.valueOf(row) + String.valueOf(col)); 
+        //REDO EVERYTHING AFTER THIS LOOP
+        //possibly try to make decision tree
+        boolean missed = false;
+        boolean shipSunk = false;
+        do{
+            missed = board[row][col].equals("."); //true if miss
+            if (!missed){
+                String current = board[row][col];
+                board[row][col] = "X" + board[row][col];
+                shipSunk = shipSank(board, current); 
+                if (shipSunk)
+                    playerShipLeft--;
 
-        boolean guess = false;
-        do {
-            String result = (board[row][col].equals(".")) ? "MISS" : "HIT";
-            if (result.equals("MISS")){
-                guess = true;
-            } else{
-                //add logic to guess somewhere close if they got a hit
             }
 
-            System.out.println("Computer gussed: " + letters[row] + col);
-            System.out.print("Result...   ");
+            String result = (missed) ? "MISS" : "HIT";
+            System.out.println("Computer guessed: " + letters[row] + (col+1));
+            System.out.print("Result... ");
             Thread.sleep(750);
             System.out.println(result);
+            if (shipSunk){
+                System.out.println("\nYou sunk a ship!!!");
+                System.out.println("Ships remaining: " + playerShipLeft + "\n");
+                Thread.sleep(2000);
+                boolean gameOver = checkWinner();
+                if (gameOver)
+                    return true;
+            }
 
-            guessed.add(String.valueOf(row) + String.valueOf(col));
-        } while (!guess);
+        } while (!missed);
+        return false;
     }
     
     public static boolean playerGuess(String[][] board, String[][] guessBoard, Scanner obj) throws InterruptedException{ //boolean checks if game is over
@@ -283,6 +303,8 @@ public class battleship{
                 System.out.println("\nYou sunk a ship!!!");
                 System.out.println("Ships remaining: " + compShipLeft + "\n");
                 Thread.sleep(2000);
+            } else{
+                //possibly add ai logic here
             }
 
         } while (!missed);
@@ -327,6 +349,7 @@ public class battleship{
         try{
             System.out.println("Num arguments: " + Integer.valueOf(args[0]));
             for (int i = 0; i < Integer.valueOf(args[0]); i++){
+                System.out.println(20-i);
                 playerGuess(compBoard, guesses, obj);
                 Thread.sleep(1000);
                 clear();
@@ -335,6 +358,9 @@ public class battleship{
             System.err.println("Error caught.");
         }
         // if playerGuess returns true, print you win, leave loop
+        printBoard(guesses);
+        System.out.println();
+        printBoard(compBoard);
         obj.close();
     }
 
