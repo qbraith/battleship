@@ -10,6 +10,9 @@ public class battleship{
     final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};   
     static int compShipLeft = 10;
     static int playerShipLeft = 10; 
+    static String reset = "\u001B[0m";
+    static String red = "\u001B[31m";
+    static String green = "\u001B[32m";
 
     public static void fillBoards(String[][] board1, String[][] board2, String[][] board3){
         for (int i = 0; i < board1.length; i++){
@@ -102,7 +105,6 @@ public class battleship{
                         System.out.println("That location is not on the board.");
                         continue;
                     }else{
-                        //never called checkvalid method
                         int row = findLetter(location);
                         int col = Integer.valueOf(location.substring(1,2)) - 1;
                         boolean isValid = checkValid(board, row, col, item, orient, false);
@@ -232,7 +234,7 @@ public class battleship{
 
             }
 
-            String result = (missed) ? "MISS" : "HIT";
+            String result = (missed) ? red + "MISS" + reset : green + "HIT" + reset;
             System.out.println("Computer guessed: " + letters[row] + (col+1));
             System.out.print("Result... ");
             Thread.sleep(750);
@@ -275,14 +277,12 @@ public class battleship{
             int col = Integer.valueOf(finalGuess.substring(1, finalGuess.length())) - 1;
             String current = board[row][col];
     
-            String result = (current.equals(".")) ? "MISS" : "HIT";
+            String result = (current.equals(".")) ? red + "MISS" + reset : green + "HIT" + reset;
             boolean sunkShip = false;
-            if (result.equals("MISS")){
+            if (result.equals(red + "MISS" + reset)){
                 guessBoard[row][col] = "O";
                 missed = true;
             } else{
-                //hit
-                System.out.println("Hit here. In hit event loop");
                 guessBoard[row][col] = "X";
                 board[row][col] = "X" + current; //turns 8 into X8 (signifying hit)
                 sunkShip = shipSank(board, current);
@@ -299,12 +299,14 @@ public class battleship{
             System.out.print("Result... ");
             Thread.sleep(750);
             System.out.println(result);
+            if (result.equals(green + "HIT" + reset))
+                Thread.sleep(1000);
+
             if (sunkShip){
+                Thread.sleep(500);
                 System.out.println("\nYou sunk a ship!!!");
                 System.out.println("Ships remaining: " + compShipLeft + "\n");
-                Thread.sleep(2000);
-            } else{
-                //possibly add ai logic here
+                Thread.sleep(2500);
             }
 
         } while (!missed);
@@ -338,6 +340,7 @@ public class battleship{
         String[][] compBoard = new String[10][10];
         String[][] playerBoard = new String[10][10];
         String[][] guesses = new String[10][10];
+        
         fillBoards(compBoard, playerBoard, guesses);
         compSetup(compBoard, r);
         //playerSetup(playerBoard, obj);
@@ -358,6 +361,7 @@ public class battleship{
             System.err.println("Error caught.");
         }
         // if playerGuess returns true, print you win, leave loop
+        clear();
         printBoard(guesses);
         System.out.println();
         printBoard(compBoard);
