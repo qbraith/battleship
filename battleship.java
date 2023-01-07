@@ -387,7 +387,7 @@ public class battleship{
         try{
             System.out.println("Num arguments: " + Integer.valueOf(args[0]));
             for (int i = 0; i < Integer.valueOf(args[0]); i++){
-                System.out.println(20-i);
+                System.out.println("Gueses: " + (20-i));
                 playerGuess(compBoard, guesses, playerGuessed, obj);
                 Thread.sleep(1000);
                 clear();
