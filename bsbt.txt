@@ -19,7 +19,7 @@ errors to note:
 still to do:
     fix noted errors
 
-    dont allow user to repeat guesses
+    player can't place vertical ships on column 10, defaults to column 1
 
     playerGuess method is slightly bad. fix threading and printing if there is a hit
     
