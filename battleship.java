@@ -8,11 +8,11 @@ import java.util.LinkedList;
 public class battleship{
    final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
    final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};   
+   final static String reset = "\u001B[0m";
+   final static String red = "\u001B[31m";
+   final static String green = "\u001B[32m";
    static int compShipLeft = 10;
    static int playerShipLeft = 10; 
-   static String reset = "\u001B[0m";
-   static String red = "\u001B[31m";
-   static String green = "\u001B[32m";
 
    public static void fillBoards(String[][] board1, String[][] board2, String[][] board3){
       for (int i = 0; i < board1.length; i++){
@@ -216,13 +216,13 @@ public class battleship{
     
    public static boolean compGuess(String[][] board, LinkedList<String> guessed, Random r) throws InterruptedException{
       System.out.println("Comp guess method started");
-      boolean duplicate = false;
+      boolean duplicate = true;
       int row = 0, col = 0; //setting them to 0 as placeholders
       do{ //this loop makes sure guess isn't a duplicate
          row = r.nextInt(10);
          col = r.nextInt(10);
-         duplicate = guessed.contains(String.valueOf(row) + String.valueOf(col));
-      } while (!duplicate);
+         duplicate = guessed.contains(String.valueOf(row) + String.valueOf(col)); //true if not duplicate
+      } while (duplicate);
       guessed.add(String.valueOf(row) + String.valueOf(col)); 
       System.out.println("Comp Guess made");
 
@@ -378,29 +378,39 @@ public class battleship{
         
       fillBoards(compBoard, playerBoard, guesses);
       compSetup(compBoard, r);
-      playerSetup(playerBoard, obj);
+      compSetup(playerBoard, r);
+      clear();
+      System.out.println("board made");
+      printBoard(playerBoard);
+      //playerSetup(playerBoard, obj);
       System.out.println("Setup done");
-      compGuess(playerBoard, compGuessed, r);
-      System.out.println("comp guess method done");
-      clear();
-      System.out.println("Computer board: \n\n");
-      printBoard(compBoard); //note that comp board will never actually be printed in real gameplay
-      try{
-         System.out.println("Num arguments: " + Integer.valueOf(args[0]));
-         for (int i = 0; i < Integer.valueOf(args[0]); i++){
-            System.out.println("Gueses: " + (20-i));
-            playerGuess(compBoard, guesses, playerGuessed, obj);
-            Thread.sleep(1000);
-            clear();
-         }
-      } catch (java.lang.ArrayIndexOutOfBoundsException | NumberFormatException e){
-         System.err.println("Error caught.");
+      for (int i = 0; i < 10; i++){
+         System.out.println((10 - i));
+         compGuess(playerBoard, compGuessed, r);
+         Thread.sleep(2000);
       }
-      // if playerGuess returns true, print you win, leave loop
-      clear();
-      printBoard(guesses);
-      System.out.println();
-      printBoard(compBoard);
-      obj.close();
+      
+      System.out.println("comp guess method done");
+      // clear();
+      // System.out.println("Computer board: \n\n");
+      // printBoard(compBoard); //note that comp board will never actually be printed in real gameplay
+      // try{
+      //    System.out.println("Num arguments: " + Integer.valueOf(args[0]));
+      //    for (int i = 0; i < Integer.valueOf(args[0]); i++){
+      //       System.out.println("Gueses: " + (20-i));
+      //       playerGuess(compBoard, guesses, playerGuessed, obj);
+      //       Thread.sleep(1000);
+      //       clear();
+      //    }
+      // } catch (java.lang.ArrayIndexOutOfBoundsException | NumberFormatException e){
+      //    System.err.println("Error caught.");
+      // }
+      // // if playerGuess returns true, print you win, leave loop
+      // clear();
+      // printBoard(guesses);
+      // System.out.println();
+      // printBoard(compBoard);
+      // obj.close();
    }
+
 }

@@ -20,19 +20,14 @@ still to do:
     fix noted errors
 
     player can't place vertical ships on column 10, defaults to column 1
-
-    playerGuess method is slightly bad. fix threading and printing if there is a hit
     
     finish compguess method with artificial intelligence (very hard)
     method will have to be boolean like playerguess
 
-    make checkWinner method to see if all ships have been sunked for either competitor (polish)
-    this method could possible be called inside the competitorGuess method
-
     create two variables in main method event loop for tracking whether game is over for each of the competitor guess methods
     while loop condition... so on
 
-    possibly modify do/while loops in other methods to mimic start of compGuess do/while
+    possibly modify do/while loops in other methods to mimic start of compGuess do/while (more efficient)
 
     create some kind of method to print the two boards next to eachother, like how you see when you play real battleship
 
