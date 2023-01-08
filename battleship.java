@@ -240,18 +240,23 @@ public class battleship{
       boolean missed = false, shipSunk = false;
       String move = board[row][col];
       do{
+         System.out.println("Your board (numbers represent ship numbers)");
+         System.out.println("Ships remaining: " + playerShipLeft);
          if (hitNotSunk)
-            moveAfterHit++;
+         moveAfterHit++;
          guessed.add(String.valueOf(row) + String.valueOf(col)); 
          missed = move.equals("."); //true if miss
          if (!missed){ //hit
             String current = board[row][col];
-            board[row][col] = "X" + board[row][col];
+            board[row][col] = "X";
             shipSunk = shipSank(board, current); 
             if (shipSunk)
-               playerShipLeft--;
-
-         } //dont really need to do anything for a miss
+            playerShipLeft--;
+            
+         } else{
+            board[row][col] = "O";
+         }
+         printBoard(board);
 
          String result = (missed) ? red + "MISS" + reset : green + "HIT" + reset;
          System.out.println("Computer guessed: " + letters[row] + (col+1));
@@ -260,14 +265,18 @@ public class battleship{
          System.out.println(result);
          if (missed)
             return false;
+         else{
+            Thread.sleep(3500);
+         }
          if (shipSunk){
             hitNotSunk = false;
             moveAfterHit = 0;
             directionAfterHit = "";
             randomDirectionBoolean = false;
+            Thread.sleep(500);
             System.out.println("\nYour ship got sank!!!");
             System.out.println("Ships remaining: " + playerShipLeft + "\n");
-            Thread.sleep(2000);
+            Thread.sleep(2500);
             boolean gameOver = checkWinner();
             if (gameOver)
                return true;
@@ -300,7 +309,7 @@ public class battleship{
          String finalGuess = "";
          clear();
          System.out.println("Your guesses (x = hit, o = miss): ");
-         System.out.println("Ships remaining: " + compShipLeft);
+         System.out.println("Computer ships remaining: " + compShipLeft);
          printBoard(guessBoard);
          do{
             System.out.print("Enter a coordinate where you think the opponent ship is: ");
@@ -346,7 +355,7 @@ public class battleship{
          if (sunkShip){
             Thread.sleep(500);
             System.out.println("\nYou sunk a ship!!!");
-            System.out.println("Ships remaining: " + compShipLeft + "\n");
+            System.out.println("Computer ships remaining: " + compShipLeft + "\n");
             Thread.sleep(2500);
          }
 
@@ -415,6 +424,7 @@ public class battleship{
          }
          try{
             String move = board[output[0]][output[1]];
+            move.toUpperCase(); //line doesn't do anything
             if (!guessed.contains(String.valueOf(output[0]) + String.valueOf(output[1])))
                break;
          } catch (java.lang.ArrayIndexOutOfBoundsException e){
@@ -459,21 +469,27 @@ public class battleship{
       compSetup(compBoard, r);
       compSetup(playerBoard, r);
       clear();
+      printBoard(compBoard);
+      Thread.sleep(7000);
       while (true){
+         clear();
          boolean gameOver;
          if (turn%2 == 1){
             gameOver = playerGuess(compBoard, guesses, playerGuessed, obj);
+            Thread.sleep(2000);
             
-         } else{
+         } else{           
             gameOver = compGuess(playerBoard, compGuessed, r);
+            Thread.sleep(7000);
          }
          if (gameOver)
             break;
+         turn++;
       }
       if (turn%2==1){
-         System.out.println("you won");
+         System.out.println(green + "\nYOU WIN!!!!!" + reset);
       } else{
-         System.out.println("you lost");
+         System.out.println(red + "\nYOU LOSE!!!!!" + reset);
       }
       
    }
