@@ -19,6 +19,8 @@ errors to note:
 still to do:
     fix noted errors
 
+    make it smart enough to recognize horzontal/vertical guesses after correct followup
+
     player can't place vertical ships on column 10, defaults to column 1
     
     finish compguess method with artificial intelligence (very hard)
@@ -30,6 +32,8 @@ still to do:
     possibly modify do/while loops in other methods to mimic start of compGuess do/while (more efficient)
 
     create some kind of method to print the two boards next to eachother, like how you see when you play real battleship
+
+    big problem, kinda have to change row and col for compguess/compSmartGuess interactions
 
 compGuess method event loop:
     first turn:
