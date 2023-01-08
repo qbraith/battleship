@@ -7,8 +7,8 @@ import java.util.LinkedList;
 
 public class battleship{
    private final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
-   private final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};   
-   private final static String reset = "\u001B[0m", red = "\u001B[31m", green = "\u001B[32m";
+   private final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};
+   private final static String reset = "\u001B[0m", red = "\u001B[31m", green = "\u001B[32m"; //unicode for printing colors
    private static String directionAfterHit = "";
    private static int compShipLeft = 10;
    private static int playerShipLeft = 10;     //static variables for keeping track of logic
@@ -435,21 +435,20 @@ public class battleship{
       System.out.print("\033[H\033[2J");  
       System.out.flush(); 
    }
-   public static void main(String[] args) throws InterruptedException{
+   public static void main(String[] args) throws InterruptedException{ //could make in diff class but no need
       Random r = new Random();
       Scanner obj = new Scanner(System.in);
-      System.out.println("Battleship game.");
-      LinkedList<String> compGuessed = new LinkedList<>(); //saved as numbers, not coordinates
-      LinkedList<String> playerGuessed = new LinkedList<>();
-      String[][] compBoard = new String[10][10];
-      String[][] playerBoard = new String[10][10];
-      String[][] guesses = new String[10][10];
+      LinkedList<String> compGuessed = new LinkedList<>(), playerGuessed = new LinkedList<>(); //saving only numbers not coordinates
+      String[][] compBoard = new String[10][10], playerBoard = new String[10][10], guesses = new String[10][10];
+      
       int turn = 1;
-        
+      
       fillBoards(compBoard, playerBoard, guesses);
       compSetup(compBoard, r);
+
+      System.out.println("Battleship game.");
       System.out.println("In this game, the player and computer will have: ");
-      System.out.println("   1 ship length 5\n   2 ships length 4\n   3 ships length 3\n   4 ships length 2");
+      System.out.println("  - 1 ship length 5\n  - 2 ships length 4\n  - 3 ships length 3\n  - 4 ships length 2");
       System.out.print("\nEnter 'y' if you want the cpu to automatically make your board (defualt) or 'n' if you would like to make your board yourself: ");
 
       String decision = obj.nextLine().toLowerCase();
@@ -472,11 +471,12 @@ public class battleship{
             break;
          turn++;
       }
-      if (turn%2==1){
+
+      if (turn%2==1)
          System.out.println(green + "\nYOU WIN!!!!!" + reset);
-      } else{
+      else
          System.out.println(red + "\nYOU LOSE!!!!!" + reset);
-      }  
+
    }
 
 }
