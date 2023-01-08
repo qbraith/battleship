@@ -466,7 +466,7 @@ public class battleship{
             Thread.sleep(2000);
          } else{           
             gameOver = compGuess(playerBoard, compGuessed, r);
-            Thread.sleep(5500);
+            Thread.sleep(4000);
          }
          if (gameOver)
             break;
