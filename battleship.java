@@ -8,16 +8,12 @@ import java.util.LinkedList;
 public class battleship{
    final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
    final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};   
-   final static String reset = "\u001B[0m";
-   final static String red = "\u001B[31m";
-   final static String green = "\u001B[32m";
-   static int compShipLeft = 10;
-   static int playerShipLeft = 10; 
-   static boolean guessAgain = false;
-   static boolean hitNotSunk = false;
-   static int beforeRow = 0, beforeCol = 0, moveAfterHit = 0;
+   final static String reset = "\u001B[0m", red = "\u001B[31m", green = "\u001B[32m";
    static String directionAfterHit = "";
-   static boolean randomDirectionBoolean = false;
+   static int compShipLeft = 10;
+   static int playerShipLeft = 10;     //random static variables for keeping track of logci
+   static int beforeRow = 0, beforeCol = 0, moveAfterHit = 0;
+   static boolean hitButNotSunk = false, directionEstablished = false;
 
    public static void fillBoards(String[][] board1, String[][] board2, String[][] board3){
       for (int i = 0; i < board1.length; i++){
@@ -67,9 +63,11 @@ public class battleship{
       }
    }
 
-   public static void playerSetup(String[][] board, Scanner obj){
-      System.out.println("When prompted below, enter 'v' if you would like to place the piece vertically on the board, 'h' if you would like to place it horizontally, or 's' if you would like to skip placing this and place a different piece first.\nPlease be careful. Unfortunantely, pieces can't be moved after they've been placed.");
+   public static void playerSetup(String[][] board, Scanner obj) throws InterruptedException{
+      System.out.println("\n\nWhen prompted below, enter 'v' if you would like to place the piece vertically on the board, 'h' if you would like to place it horizontally, or 's' if you would like to skip placing this and place a different piece first.\nPlease be careful. Unfortunantely, pieces can't be moved after they've been placed.");
       System.out.println("\nWhen prompted for where you want to put the piece. If you chose to place your piece horizontally, the space you enter will be the left most coordinate. If you chose vertically, it will be the highest coordinate.\n");
+      System.out.println("Scroll up to read fully");
+      Thread.sleep(3000);
       //possibly print text about orientation
       //and implement waiting for user to read all information (thread.sleep)
 
@@ -82,7 +80,7 @@ public class battleship{
             int item = iterator.next();
             System.out.println("Current board: ");
             printBoard(board);
-            System.out.println("\nPlacing piece of length " + item);
+            System.out.println("\nPlacing ship of length " + item);
             boolean orientationBool = false, cont = false;
             String orient = "";
             do {
@@ -111,7 +109,7 @@ public class battleship{
                   continue;
                }else{
                   int row = findLetter(location);
-                  int col = Integer.valueOf(location.substring(1,2)) - 1;
+                  int col = Integer.valueOf(location.substring(1)) - 1;
                   boolean isValid = checkValid(board, row, col, item, orient, false);
                   if (!isValid){
                         System.out.println("You can't place your ship there.");
@@ -220,11 +218,10 @@ public class battleship{
    }
     
    public static boolean compGuess(String[][] board, LinkedList<String> guessed, Random r) throws InterruptedException{
-      System.out.println("Comp guess method started");
       boolean duplicate = true;
       int row = 0, col = 0; //setting them to 0 as placeholders
       do{ //this loop makes sure guess isn't a duplicate
-         if (hitNotSunk){
+         if (hitButNotSunk){
             int[] rowCol = compSmartGuess(board, beforeRow, beforeCol, guessed, r);
             row = rowCol[0];
             col = rowCol[1];
@@ -235,14 +232,13 @@ public class battleship{
          }
          duplicate = guessed.contains(String.valueOf(row) + String.valueOf(col)); //true if not duplicate
       } while (duplicate);
-      System.out.println("Comp Guess made");
       
       boolean missed = false, shipSunk = false;
       String move = board[row][col];
       do{
          System.out.println("Your board (numbers represent ship numbers)");
          System.out.println("Ships remaining: " + playerShipLeft);
-         if (hitNotSunk)
+         if (hitButNotSunk)
          moveAfterHit++;
          guessed.add(String.valueOf(row) + String.valueOf(col)); 
          missed = move.equals("."); //true if miss
@@ -251,7 +247,9 @@ public class battleship{
             board[row][col] = "X";
             shipSunk = shipSank(board, current); 
             if (shipSunk)
-            playerShipLeft--;
+               playerShipLeft--;
+            if (playerShipLeft == 0)
+               return true;
             
          } else{
             board[row][col] = "O";
@@ -269,28 +267,23 @@ public class battleship{
             Thread.sleep(3500);
          }
          if (shipSunk){
-            hitNotSunk = false;
+            hitButNotSunk = false;
             moveAfterHit = 0;
             directionAfterHit = "";
-            randomDirectionBoolean = false;
+            directionEstablished = false;
             Thread.sleep(500);
             System.out.println("\nYour ship got sank!!!");
             System.out.println("Ships remaining: " + playerShipLeft + "\n");
             Thread.sleep(2500);
-            boolean gameOver = checkWinner();
-            if (gameOver)
-               return true;
             return compGuess(board, guessed, r);
             //might have to recursively recall
          } else{ //here is where you implement logic to guess somewhere close
-            hitNotSunk = true; 
-            guessAgain = true;
+            hitButNotSunk = true; 
             beforeRow = row;
             beforeCol = col;
             if (directionAfterHit.length() > 0)
-               randomDirectionBoolean = true;
+               directionEstablished = true;
             int[] rowCol = compSmartGuess(board, row, col, guessed, r);
-            System.out.println("Correct guess. Next guess coordinates: {" + rowCol[0] + "," + rowCol[1] + "}");
             row = rowCol[0];
             col = rowCol[1];
             move = board[row][col];
@@ -298,7 +291,6 @@ public class battleship{
 
          }
       } while (!missed);
-      guessAgain = false;
       return false;
    }
     
@@ -364,22 +356,15 @@ public class battleship{
    }
     
    public static int[] compSmartGuess(String[][] board, int row, int col, LinkedList<String> guessed, Random r){
-      System.out.println("Start of csg method. Creating next move for: " + letters[row] + (col+1));
-      if (randomDirectionBoolean){
-         System.out.println("Pattern established: " + directionAfterHit);
-         System.out.print("moveafterhit: " + moveAfterHit);
-         System.out.println(". Just incase move: " + guessed.get(guessed.size() - moveAfterHit - 1));
-      }
       int[] output = {0, 0};
       ArrayList<Integer> chosen = new ArrayList<>();
       while (true){
          output = new int[] {row, col};
          int choice = r.nextInt(4);
-         if (randomDirectionBoolean){
+         if (directionEstablished){
             if (directionAfterHit.charAt(0) == 'v'){
                choice = ((int)(Math.random()*2));
                if (chosen.contains(0) && chosen.contains(1)){
-                  System.out.println("We full v");
                   int prevRow = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(0, 1));
                   int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1, 2));
                   return compSmartGuess(board, prevRow, prevCol, guessed, r);
@@ -387,7 +372,6 @@ public class battleship{
             } else{
                choice = ((int)(Math.random()*2)) + 2;
                if (chosen.contains(2) && chosen.contains(3)){
-                  System.out.println("We full h");
                   int prevRow = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(0, 1));
                   int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1, 2));
                   return compSmartGuess(board, prevRow, prevCol, guessed, r);
@@ -397,27 +381,26 @@ public class battleship{
          switch (choice){
             case 0:
             output[0]++;
-            if (!randomDirectionBoolean)
-               directionAfterHit = "vx";
+            if (!directionEstablished)
+               directionAfterHit = "v";
             break;
             case 1:
             output[0]--;
-            if (!randomDirectionBoolean)
-               directionAfterHit = "vx";
+            if (!directionEstablished)
+               directionAfterHit = "v";
             break;
             case 2:
             output[1]++;
-            if (!randomDirectionBoolean)
-               directionAfterHit = "hx";
+            if (!directionEstablished)
+               directionAfterHit = "h";
             break;
             case 3:
             output[1]--;
-            if (!randomDirectionBoolean)
-               directionAfterHit = "hx";
+            if (!directionEstablished)
+               directionAfterHit = "h";
          }
          chosen.add(choice);
          if (chosen.contains(0) && chosen.contains(1) && chosen.contains(2) && chosen.contains(3)){
-            System.out.println("Contains all. Current: " + letters[row] + (col+1) + ", next" + guessed.get(guessed.size() - moveAfterHit - 1));
             int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(0, 1));
             int prevRow = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1, 2));
             return compSmartGuess(board, prevRow, prevCol, guessed, r);
@@ -467,10 +450,18 @@ public class battleship{
         
       fillBoards(compBoard, playerBoard, guesses);
       compSetup(compBoard, r);
-      compSetup(playerBoard, r);
+      System.out.println("In this game, the player and computer will have: ");
+      System.out.println("   1 ship length 5\n   2 ships length 4\n   3 ships length 3\n   4 ships length 2");
+      System.out.print("\nEnter 'y' if you want the cpu to automatically make your board (defualt) or 'n' if you would like to make your board yourself: ");
+      String decision = obj.nextLine().toLowerCase();
+      if (decision.equals("n"))
+         playerSetup(playerBoard, obj);
+      else
+         compSetup(playerBoard, r);
+      
       clear();
-      printBoard(compBoard);
-      Thread.sleep(7000);
+      // printBoard(compBoard);
+      // Thread.sleep(7000);
       while (true){
          clear();
          boolean gameOver;
@@ -480,7 +471,7 @@ public class battleship{
             
          } else{           
             gameOver = compGuess(playerBoard, compGuessed, r);
-            Thread.sleep(7000);
+            Thread.sleep(5500);
          }
          if (gameOver)
             break;

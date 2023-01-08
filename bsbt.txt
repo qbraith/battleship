@@ -7,7 +7,7 @@ steps:
 2. setup 
     randomly place all 10 cpu boards //COMPLETED
 
-    allow user to place all 10 of their boards 
+    cant put vertical boards in col 10
 
 3. gameplay
     implement guessing mechanism to continue with game (shouldn't be too hard)
