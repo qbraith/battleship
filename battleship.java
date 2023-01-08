@@ -6,20 +6,20 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class battleship{
-   final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
-   final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};   
-   final static String reset = "\u001B[0m", red = "\u001B[31m", green = "\u001B[32m";
-   static String directionAfterHit = "";
-   static int compShipLeft = 10;
-   static int playerShipLeft = 10;     //random static variables for keeping track of logci
-   static int beforeRow = 0, beforeCol = 0, moveAfterHit = 0;
-   static boolean hitButNotSunk = false, directionEstablished = false;
+   private final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
+   private final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};   
+   private final static String reset = "\u001B[0m", red = "\u001B[31m", green = "\u001B[32m";
+   private static String directionAfterHit = "";
+   private static int compShipLeft = 10;
+   private static int playerShipLeft = 10;     //static variables for keeping track of logic
+   private static int beforeRow = 0, beforeCol = 0, moveAfterHit = 0;
+   private static boolean hitButNotSunk = false, directionEstablished = false;
 
    public static void fillBoards(String[][] board1, String[][] board2, String[][] board3){
       for (int i = 0; i < board1.length; i++){
          for (int j = 0; j < board1[i].length; j++){
             board1[i][j] = ".";
-            board2[i][j] = "."; //assumes boards are same dimensions (they have to be)
+            board2[i][j] = "."; //filling boards with . for grid
             board3[i][j] = ".";
          }
       }
@@ -210,7 +210,7 @@ public class battleship{
     
    public static int findLetter(String location){
       String letter = location.substring(0, 1).toUpperCase();
-      for (int i = 0; i < letters.length; i++){
+      for (int i = 0; i < letters.length; i++){ //linear search
          if (letters[i].equals(letter))
             return i;
       }
@@ -239,7 +239,7 @@ public class battleship{
          System.out.println("Your board (numbers represent ship numbers)");
          System.out.println("Ships remaining: " + playerShipLeft);
          if (hitButNotSunk)
-         moveAfterHit++;
+            moveAfterHit++;
          guessed.add(String.valueOf(row) + String.valueOf(col)); 
          missed = move.equals("."); //true if miss
          if (!missed){ //hit
@@ -263,9 +263,9 @@ public class battleship{
          System.out.println(result);
          if (missed)
             return false;
-         else{
-            Thread.sleep(3500);
-         }
+         else
+            Thread.sleep(2500);
+
          if (shipSunk){
             hitButNotSunk = false;
             moveAfterHit = 0;
@@ -276,8 +276,7 @@ public class battleship{
             System.out.println("Ships remaining: " + playerShipLeft + "\n");
             Thread.sleep(2500);
             return compGuess(board, guessed, r);
-            //might have to recursively recall
-         } else{ //here is where you implement logic to guess somewhere close
+         } else{
             hitButNotSunk = true; 
             beforeRow = row;
             beforeCol = col;
@@ -287,8 +286,6 @@ public class battleship{
             row = rowCol[0];
             col = rowCol[1];
             move = board[row][col];
-            //might have to introduce static boolean to keep track of this
-
          }
       } while (!missed);
       return false;
@@ -343,7 +340,6 @@ public class battleship{
          System.out.println(result);
          if (result.equals(green + "HIT" + reset))
             Thread.sleep(1000);
-
          if (sunkShip){
             Thread.sleep(500);
             System.out.println("\nYou sunk a ship!!!");
@@ -356,8 +352,9 @@ public class battleship{
    }
     
    public static int[] compSmartGuess(String[][] board, int row, int col, LinkedList<String> guessed, Random r){
-      int[] output = {0, 0};
+      int[] output = {0, 0}; //guessing logically, keeping track of hits and misses
       ArrayList<Integer> chosen = new ArrayList<>();
+
       while (true){
          output = new int[] {row, col};
          int choice = r.nextInt(4);
@@ -398,6 +395,7 @@ public class battleship{
             output[1]--;
             if (!directionEstablished)
                directionAfterHit = "h";
+            break;
          }
          chosen.add(choice);
          if (chosen.contains(0) && chosen.contains(1) && chosen.contains(2) && chosen.contains(3)){
@@ -408,9 +406,9 @@ public class battleship{
          try{
             String move = board[output[0]][output[1]];
             move.toUpperCase(); //line doesn't do anything
-            if (!guessed.contains(String.valueOf(output[0]) + String.valueOf(output[1])))
+            if (!guessed.contains(String.valueOf(output[0]) + String.valueOf(output[1]))) //check if duplicate
                break;
-         } catch (java.lang.ArrayIndexOutOfBoundsException e){
+         } catch (java.lang.ArrayIndexOutOfBoundsException e){ //check if on board
             continue;
          }
       }
@@ -453,22 +451,19 @@ public class battleship{
       System.out.println("In this game, the player and computer will have: ");
       System.out.println("   1 ship length 5\n   2 ships length 4\n   3 ships length 3\n   4 ships length 2");
       System.out.print("\nEnter 'y' if you want the cpu to automatically make your board (defualt) or 'n' if you would like to make your board yourself: ");
+
       String decision = obj.nextLine().toLowerCase();
       if (decision.equals("n"))
          playerSetup(playerBoard, obj);
       else
          compSetup(playerBoard, r);
       
-      clear();
-      // printBoard(compBoard);
-      // Thread.sleep(7000);
       while (true){
          clear();
          boolean gameOver;
          if (turn%2 == 1){
             gameOver = playerGuess(compBoard, guesses, playerGuessed, obj);
             Thread.sleep(2000);
-            
          } else{           
             gameOver = compGuess(playerBoard, compGuessed, r);
             Thread.sleep(5500);
@@ -481,8 +476,7 @@ public class battleship{
          System.out.println(green + "\nYOU WIN!!!!!" + reset);
       } else{
          System.out.println(red + "\nYOU LOSE!!!!!" + reset);
-      }
-      
+      }  
    }
 
 }
