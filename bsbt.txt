@@ -7,16 +7,21 @@ steps:
 2. setup 
     randomly place all 10 cpu boards //COMPLETED
 
-    cant put vertical boards in col 10
 
 3. gameplay
     implement guessing mechanism to continue with game (shouldn't be too hard)
     check to see if there is a winner (all ships are sank), for both
+    make board unable to place adjacent ships
 
 errors to note:    
-    make gameplay better, printing boards and such
+    skipping during playersetup is scuffed, fix ship numbers
 
-    fix weird printing during compguess method
+    also try to fix the thing about ships being next to eachother around the edges
+
+    make it so that it checks whether its close to a piece but also excludes index out of bounds errors
+
+    consider having differnet colors to make it easier to see where computer guessed
+    also maybe differnt colors for hits misses and ships on board
 
     refine for final product
 

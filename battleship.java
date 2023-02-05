@@ -1,10 +1,10 @@
 import java.lang.Thread;
+//import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.LinkedList;
-
 public class battleship{
    private final static String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
    private final static int[] pieceLengths = {5, 4, 4, 3, 3, 3, 2, 2, 2, 2};
@@ -73,10 +73,11 @@ public class battleship{
 
       ArrayList<Integer> piecesToPlace = new ArrayList<>();
       for (int pieceLength : pieceLengths) {piecesToPlace.add(pieceLength);}
+      //ArrayList<Integer> shipNumbers = new ArrayList<>(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
 
+      int piecePlacer = 0;
       while (piecesToPlace.size() > 0){
-         int piecePlacer = 0;
-         for (Iterator<Integer> iterator = piecesToPlace.iterator(); iterator.hasNext();){
+         for (Iterator<Integer> iterator = piecesToPlace.iterator(); iterator.hasNext();){ //add shipnumbers iterator(try on new branch or smth maybe)
             int item = iterator.next();
             System.out.println("Current board: ");
             printBoard(board);
@@ -97,8 +98,10 @@ public class battleship{
                   orient = orientation;
                }
             } while (!orientationBool);
-            if (cont)
+            if (cont){
+               piecePlacer++;
                continue;
+            }
             boolean validPlacement = false;
             do {
                System.out.print("Enter the coordinate that you want to place your ship (ie A8): ");
@@ -115,10 +118,11 @@ public class battleship{
                         System.out.println("You can't place your ship there.");
                         continue;
                   }
-    
-                  place(board, row, col, item, orient, false, piecePlacer); //item is the length of the piece itself
+                  
+                  place(board, row, col, item, orient, false, (piecePlacer%10)); //item is the length of the piece itself
                   printBoard(board);
                   iterator.remove();
+                  //shipNumbers.remove(Integer.valueOf(piecePlacer%10));
                   validPlacement = true;
                   piecePlacer++;
                }
@@ -141,19 +145,34 @@ public class battleship{
       }
    }
 
+   public static int helper(String[][] board, int checkRow, int checkCol){
+      int adjacent = 0, bounds = 0;
+      try{
+         if (!board[checkRow][checkCol].equals(".")){
+            //there is something found next to the ship that isn't an empty space
+            adjacent++;
+         }
+      } catch (Exception e){
+         bounds++;
+      }
+      return adjacent;
+   }
+   
    public static boolean checkValid(String[][] board, int row, int col, int pieceLength, String direction, boolean isComp){
       if (direction.equals("v")){
          if (row + pieceLength > 10)
             return false;
          for (int i = 0; i < pieceLength; i++){
             if (isComp){
-               try{
-                  if (!board[row+i][col+1].equals(".") || !board[row-1+i][col].equals(".") || !board[row+1+i][col].equals(".") || !board[row+i][col-1].equals(".")){
-                     return false;
-                  }
-               } catch (IndexOutOfBoundsException e){
-                  //do nothing
+               int[][] places = {{row+i, col+1}, {row+i-1, col}, {row+i+1, col}, {row+i, col-1}};
+               int bad = 0;
+               
+               for (int j = 0; j < 4; j++){
+                  bad += helper(board, places[j][0], places[j][1]);
                }
+
+               if (bad > 0)
+                  return false;
             }
             if (!board[row + i][col].equals("."))
                return false;
@@ -164,13 +183,15 @@ public class battleship{
             return false;
          for (int i = 0; i < pieceLength; i++){
             if (isComp){
-               try{
-                  if (!board[row][col+1+i].equals(".") || !board[row-1][col+i].equals(".") || !board[row+1][col+i].equals(".") || !board[row][col-1+i].equals(".")){
-                     return false;
-                  }
-               } catch (IndexOutOfBoundsException e){
-                  //do nothing
+               int[][] places = {{row-1, col+i}, {row+1, col+i}, {row, col+i-1}, {row, col+i+1}};
+               int good = 0;
+
+               for (int j = 0; j < 4; j++){
+                  good += helper(board, places[j][0], places[j][1]);
                }
+
+               if (good > 0)
+                  return false;
             }
             if (!board[row][col+i].equals("."))
                return false;
@@ -363,14 +384,14 @@ public class battleship{
                choice = ((int)(Math.random()*2));
                if (chosen.contains(0) && chosen.contains(1)){
                   int prevRow = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(0, 1));
-                  int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1, 2));
+                  int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1));
                   return compSmartGuess(board, prevRow, prevCol, guessed, r);
                }
             } else{
                choice = ((int)(Math.random()*2)) + 2;
                if (chosen.contains(2) && chosen.contains(3)){
                   int prevRow = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(0, 1));
-                  int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1, 2));
+                  int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1));
                   return compSmartGuess(board, prevRow, prevCol, guessed, r);
                }
             }
@@ -400,7 +421,7 @@ public class battleship{
          chosen.add(choice);
          if (chosen.contains(0) && chosen.contains(1) && chosen.contains(2) && chosen.contains(3)){
             int prevCol = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(0, 1));
-            int prevRow = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1, 2));
+            int prevRow = Integer.valueOf(guessed.get(guessed.size() - moveAfterHit - 1).substring(1));
             return compSmartGuess(board, prevRow, prevCol, guessed, r);
          }
          try{
@@ -456,7 +477,14 @@ public class battleship{
          playerSetup(playerBoard, obj);
       else
          compSetup(playerBoard, r);
-      
+      Thread.sleep(1000);
+      System.out.println("comp baord");
+      printBoard(compBoard);
+      System.out.println("player board");
+      printBoard(playerBoard);
+      System.out.println("\n\n");
+      Thread.sleep(10000);
+
       while (true){
          clear();
          boolean gameOver;
@@ -465,7 +493,7 @@ public class battleship{
             Thread.sleep(2000);
          } else{           
             gameOver = compGuess(playerBoard, compGuessed, r);
-            Thread.sleep(4000);
+            Thread.sleep(3500);
          }
          if (gameOver)
             break;
